@@ -26,6 +26,7 @@ class Note(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='notes')
     tags = models.ManyToManyField(Tag, related_name='notes')
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notes')
+    is_favorite = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title

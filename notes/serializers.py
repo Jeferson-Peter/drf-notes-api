@@ -22,7 +22,8 @@ class NoteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Note
-        fields = ['id', 'title', 'content', 'category', 'tags', 'created_at', 'updated_at', 'user']
+        fields = ['id', 'title', 'content', 'category', 'tags', 'created_at',
+                  'updated_at', 'user', 'is_favorite']
         read_only_fields = ['user']
 
     def create(self, validated_data):
