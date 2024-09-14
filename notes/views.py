@@ -1,4 +1,4 @@
-from rest_framework import viewsets, filters
+from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.filters import SearchFilter
@@ -68,3 +68,29 @@ class NoteViewSet(viewsets.ModelViewSet):
         note.save()
         return Response({'status': 'favorite status updated', 'is_favorite': note.is_favorite})
 
+
+class NoteHistoryViewSet(viewsets.ViewSet):
+
+    def list(self, request, pk=None):
+        try:
+            note = Note.objects.get(pk=pk, user=request.user)
+            history = note.history.all()
+
+            history_data = []
+            for record in history:
+                history_data.append({
+                    'history_id': record.history_id,
+                    'title': record.title,
+                    'content': record.content,
+                    'created_at': record.created_at,
+                    'updated_at': record.updated_at,
+                    'is_favorite': record.is_favorite,
+                    'history_date': record.history_date,
+                    'history_change_reason': record.history_change_reason,
+                    'history_type': record.history_type,
+                    'history_user_id': record.history_user_id,
+                })
+
+            return Response(history_data, status=status.HTTP_200_OK)
+        except Note.DoesNotExist:
+            return Response({"detail": "Nota não encontrada."}, status=status.HTTP_404_NOT_FOUND)
