@@ -20,4 +20,5 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/auth/', include('accounts_auth.urls')),
+    path('api/', include('notes.urls')),  # Include the URLs from the notes app
 ]
