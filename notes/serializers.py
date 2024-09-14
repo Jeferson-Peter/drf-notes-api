@@ -17,8 +17,8 @@ class TagSerializer(serializers.ModelSerializer):
 
 
 class NoteSerializer(serializers.ModelSerializer):
-    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all(), required=False)
-    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(), many=True, required=False)
+    category = serializers.StringRelatedField()
+    tags = TagSerializer(many=True)
 
     class Meta:
         model = Note
