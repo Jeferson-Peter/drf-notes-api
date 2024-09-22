@@ -1,9 +1,24 @@
+import random
+import string
+
 from django.db import models
 from django.contrib.auth.models import User
-from django.dispatch import receiver
+from django.utils.text import slugify
 from simple_history.models import HistoricalRecords
-from simple_history.utils import update_change_reason
-from django.db.models.signals import m2m_changed
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
+
+
+def generate_unique_slug(instance, new_slug=None):
+    slug = new_slug or slugify(instance.title)
+    Klass = instance.__class__
+    qs_exists = Klass.objects.filter(slug=slug).exists()
+    if qs_exists:
+        random_string = ''.join(random.choices(string.ascii_lowercase + string.digits, k=4))
+        slug = f"{slug}-{random_string}"
+        return generate_unique_slug(instance, new_slug=slug)
+    return slug
+
 
 class Category(models.Model):
     name = models.CharField(max_length=100)
@@ -31,6 +46,7 @@ class Note(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notes')
     is_favorite = models.BooleanField(default=False)
     history = HistoricalRecords()
+    slug = models.SlugField(unique=True, max_length=255, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if self.pk:
@@ -58,3 +74,9 @@ class Note(models.Model):
 
     def __str__(self):
         return self.title
+
+
+@receiver(pre_save, sender=Note)
+def pre_save_note_receiver(sender, instance, *args, **kwargs):
+    if not instance.slug:
+        instance.slug = generate_unique_slug(instance)

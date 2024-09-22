@@ -1,4 +1,4 @@
-from rest_framework import viewsets, filters, status
+from rest_framework import viewsets, filters, status, exceptions
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.filters import SearchFilter
@@ -67,6 +67,20 @@ class NoteViewSet(viewsets.ModelViewSet):
         note.is_favorite = not note.is_favorite
         note.save()
         return Response({'status': 'favorite status updated', 'is_favorite': note.is_favorite})
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        lookup_value = self.kwargs.get('pk')
+
+        # Tenta buscar por ID primeiro
+        if lookup_value.isdigit():
+            return queryset.get(pk=lookup_value)
+
+        # Se não for um dígito, tenta buscar pelo slug
+        try:
+            return queryset.get(slug=lookup_value)
+        except Note.DoesNotExist:
+            raise exceptions.NotFound("Note not found.")
 
 
 class NoteHistoryViewSet(viewsets.ViewSet):
